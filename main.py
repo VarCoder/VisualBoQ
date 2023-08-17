@@ -79,7 +79,6 @@ def findExcelFile():
 
 
 def removeFiles(path, dir):
-    print(os.listdir())
     if path in os.listdir():
         os.remove(path)
 
@@ -390,7 +389,7 @@ class Agent():
                 row = self.modules[switch][0][1]
                 frameImg = None
                 if isinstance(self.modules[switch][0][-1],pathlib.PurePath):
-                    frameImg = Path(os.path.join(self.dir, self.modules[switch][0][-1].absolute()))
+                    frameImg = str(Path(os.path.join(self.dir, self.modules[switch][0][-1].absolute())))
                 sheet = self.wb[sheetObj.name]
 
                 prodDesc = "Product Description: " + \
