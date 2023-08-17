@@ -1,6 +1,5 @@
 tmp/
-assets/
 tempCodeRunner.py
-*.xlsm
-*.docx
+/*.xlsm
+/*.docx
 tempCodeRunnerFile.py

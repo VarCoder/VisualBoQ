@@ -18,6 +18,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
+
+#TODO: Implement Color for Infinity
+#TODO: Fix the Transparent Frame 
 warnings.filterwarnings('ignore')
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -88,7 +91,8 @@ def removeFiles(path, dir):
 
 def setImageDpi(path, dpi):
     image = PILimage.open(path)
-    image.convert("RGB").save(path, dpi=(dpi, dpi))
+    # image.convert("RGB").save(path, dpi=(dpi, dpi))
+    image.save(path, dpi=(dpi, dpi))
 
 
 class Doc():
@@ -104,11 +108,12 @@ class Doc():
         logo_run = paragraph.add_run()
         logo_run.add_picture(self.logo, width=Inches(2.5))
 
-    def addRun(self, img, desc1, desc2,img2=None):
+    def addRun(self, img, desc1, desc2, img2=None):
         p = self.doc.add_paragraph()
         r = p.add_run()
         if img2 != None:
             r.add_picture(img2)
+            r.add_break()
         r.add_picture(img)
         r.add_break()
         r.add_text(desc1)
@@ -149,13 +154,13 @@ class Agent():
 
     def __init__(self, wb, dir="tmp", sheets: List[Sheet] = []):
         self.options = webdriver.ChromeOptions()
-        self.options.add_argument("--disable-gpu")
-        self.options.add_argument("--headless")
+        # self.options.add_argument("--disable-gpu")
+        # self.options.add_argument("--headless")
         self.options.add_argument("--window-size=1920,1080")
         self.options.add_argument('log-level=3')
         self.driver = webdriver.Chrome(options=self.options)
-        self.maxWait = 30
-        self.wait = WebDriverWait(self.driver, self.maxWait)
+        self.maxWait = 3
+        # WebDriverWait(self.driver,self.maxWait) = WebDriverWait(self.driver, self.maxWait)
 
         self.wb = wb
         self.dir = dir
@@ -207,9 +212,9 @@ class Agent():
                 return i-1
 
     def getModules(self):
-        self.modules = []
+        self.modulesFinal = []
         for sheet in range(len(self.sheets)):
-
+            self.modules = []
             start, end = self.sheetObjs[sheet].info["Modules"]
             cell_range = f"{start}{self.startInd}:{end}{self.maxRows[sheet]}"
             maxModuleSize = ord(end) - ord(start) + 1
@@ -220,10 +225,13 @@ class Agent():
                         self.modules.append([self.sheetObjs[sheet], cell.row])
                     if cell.value != None:
                         self.modules[cnt//maxModuleSize].append(cell.value)
+                        # print(self.modules[cnt//maxModuleSize])
                     cnt += 1
+            self.modulesFinal += self.modules
+
         tmpModules = []
         cnt = 0
-        for module in self.modules:
+        for module in self.modulesFinal:
             tmpModules.append([module[:2]])
             for item in module[2:]:
                 XL_WEB = self.XL_WEB_INF if module[0].name == "Infinity" else self.XL_WEB_DES
@@ -241,6 +249,7 @@ class Agent():
         module = [[Sheet(Infinity or Designer),rowOfInformation], Module 1, Module 2, Module 3]
         """
         self.modules = tmpModules
+        # print(self.modules)
 
     def getColors(self):  # sheet is the indice of the sheet
         self.colors = []
@@ -262,10 +271,18 @@ class Agent():
         # print(self.colors)
 
     def clickColor(self, level: str, colorProfile: str):
-        # print(colorProfile)
-        self.wait.until(
-            EC.visibility_of_any_elements_located((By.CLASS_NAME, "mod-label"))
-        )
+        try:
+            WebDriverWait(self.driver, self.maxWait).until(
+                EC.visibility_of_any_elements_located(
+                    (By.CLASS_NAME, "mod-label"))
+            )
+        except:
+            self.driver.execute_script(
+                "arguments[0].click();", self.colorPanel)
+            WebDriverWait(self.driver, self.maxWait).until(
+                EC.visibility_of_any_elements_located(
+                    (By.CLASS_NAME, "mod-label"))
+            )
 
         #colorProfile = [[Sheet(Designer), row], OuterGlass, OuterFrame, InnerGlass, InnerFrame]
         colorType = self.driver.find_element(
@@ -273,7 +290,7 @@ class Agent():
         )
         colorType.click()
         if level == "Outer Surface":
-            self.wait.until(
+            WebDriverWait(self.driver, self.maxWait).until(
                 EC.visibility_of_any_elements_located(
                     (By.CLASS_NAME, "fab-label-inner"))
             )
@@ -284,12 +301,13 @@ class Agent():
         color = self.driver.find_element(
             By.XPATH, f"//a[@glass-color=\'{colorProfile.lower()}\'][@data-colortype='glass']"
         ).click()
+
     def clickModules(self):
         for moduleInd in range(len(self.modules)):
             modules = self.modules[moduleInd]
             self.openToIndia()
 
-            self.wait.until(
+            WebDriverWait(self.driver, self.maxWait).until(
                 EC.visibility_of_any_elements_located(
                     (By.CLASS_NAME, "mod-label"))
             )
@@ -304,39 +322,59 @@ class Agent():
                 # TODO: Implement vertical switches (when excel is updated)
                 modType = self.driver.find_elements(
                     By.CLASS_NAME, "mod-label")[len(modules)-2]
+                print(modType.text)
                 modType.click()
 
-            modPanel = self.wait.until(
-                lambda driver: driver.find_element(
-                    By.CSS_SELECTOR, 'div[data-panelid=".modulePanel"]'
-                )
+            # WebDriverWait(self.driver,self.maxWait).until(
+            #     EC.visibility_of_element_located(
+            #         (By.CSS_SELECTOR, 'div[data-panelid=".modulePanel"]')
+            #     )
+            # )
+            modPanel = self.driver.find_element(
+                By.CSS_SELECTOR, 'div[data-panelid=".modulePanel"]'
             )
             modPanel.click()
-
-            self.wait.until(
-                EC.visibility_of_any_elements_located(
-                    (By.CLASS_NAME, "module-type-label"))
-            )
-
+            try:
+                WebDriverWait(self.driver, self.maxWait).until(
+                    EC.visibility_of_any_elements_located(
+                        (By.CLASS_NAME, "module-type-label"))
+                )
+            except:
+                modPanel.click()
+                WebDriverWait(self.driver, self.maxWait).until(
+                    EC.visibility_of_any_elements_located(
+                        (By.CLASS_NAME, "module-type-label"))
+                )
             # Skip the module info and get the modules themselves
             for module in modules[1:]:
+                WebDriverWait(self.driver, self.maxWait).until(
+                    EC.element_to_be_clickable(
+                        (By.XPATH, f"//div[text()=\'{module}\']"))
+                )
                 self.driver.find_element(
                     By.XPATH, f"//div[text()=\'{module}\']"
                 ).click()
-
-            modPanel.click()
-            self.wait.until(
+            WebDriverWait(self.driver, self.maxWait).until(
                 EC.invisibility_of_element(
-                    (By.CLASS_NAME, "module-type-label"))
+                    (By.CLASS_NAME, "module-type-label")
+                )
             )
-            # self.wait = WebDriverWait(self.driver,30)
+            modPanel.click()
+            modPanel.click()
+            # WebDriverWait(self.driver,self.maxWait).until(
+            #     EC.invisibility_of_element(
+            #         (By.CLASS_NAME, "module-type-label"))
+            # )
+            # WebDriverWait(self.driver,self.maxWait) = WebDriverWait(self.driver,30)
             # #TODO: Implement Colors
             if modules[0][0].name == "Designer":
-                colorPanel = self.driver.find_element(
-                    By.CSS_SELECTOR, 'div[data-panelid=".colorPanel"]'
+                self.colorPanel = WebDriverWait(self.driver, self.maxWait).until(
+                    lambda driver: driver.find_element(
+                        By.CSS_SELECTOR, 'div[data-panelid=".colorPanel"]'
+                    )
                 )
-                colorPanel.click()
-                # self.driver.execute_script("arguments[0].click();", colorPanel)
+                self.driver.execute_script(
+                    "arguments[0].click();", self.colorPanel)
                 colorProfile = find(
                     self.colors, lambda x: x[0][1] == modules[0][1]
                 )[1:]
@@ -344,13 +382,13 @@ class Agent():
                 self.clickColor("Outer Frame", colorProfile=colorProfile[1])
                 self.clickColor("Inner Surface", colorProfile=colorProfile[2])
                 self.clickColor("Inner Frame", colorProfile=colorProfile[3])
-                response = requests.get(f"https://app.smarttouchswitch.com/modules/components/images/frames/{colorProfile[0]}{colorProfile[1]}-Frame.png")
+                response = requests.get(
+                    f"https://app.smarttouchswitch.com/modules/components/images/frames/{colorProfile[0]}{colorProfile[1]}-Frame.png")
                 frame = PILimage.open(BytesIO(response.content))
                 framePath = f"frame_{moduleInd}.png"
                 frame.save(framePath)
-                modules[0].append(Path(framePath))
-                colorPanel.click()
-
+                modules[0].append(framePath)
+                self.colorPanel.click()
 
             self.screenshot(index=moduleInd)
 
@@ -388,8 +426,11 @@ class Agent():
                 sheetObj = self.modules[switch][0][0]
                 row = self.modules[switch][0][1]
                 frameImg = None
-                if isinstance(self.modules[switch][0][-1],pathlib.PurePath):
-                    frameImg = str(Path(os.path.join(self.dir, self.modules[switch][0][-1].absolute())))
+                if isinstance(self.modules[switch][0][-1], str) and self.modules[switch][0][-1].endswith(".png"):
+                    frameImg = str(
+                        Path(os.path.join(self.dir, self.modules[switch][0][-1])).absolute())
+                    setImageDpi(frameImg, 96*2)
+                    print(frameImg)
                 sheet = self.wb[sheetObj.name]
 
                 prodDesc = "Product Description: " + \
@@ -399,7 +440,7 @@ class Agent():
                 path = str(
                     Path(os.path.join(self.dir, f"switch_{switch}.png")).absolute())
                 setImageDpi(path, 96*2)
-                document.addRun(path, space, prodDesc,frameImg)
+                document.addRun(path, space, prodDesc, frameImg)
             document.save()
 
 
