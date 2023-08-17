@@ -3,13 +3,12 @@ import shutil
 import warnings
 from io import BytesIO
 from pathlib import Path
-import pathlib
 from typing import List
 
 import requests
 from docx import Document as WordDocument
-from docx.shared import Inches
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+from docx.shared import Inches
 from openpyxl import load_workbook
 from openpyxl.utils.exceptions import InvalidFileException
 from PIL import Image as PILimage
@@ -19,9 +18,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
+# TODO: Implement Color for Infinity
 
-#TODO: Implement Color for Infinity
-#TODO: Fix the Transparent Frame 
 warnings.filterwarnings('ignore')
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -112,9 +110,9 @@ class Doc():
     def addRun(self, img, desc1, desc2, img2=None):
         p = self.doc.add_paragraph()
         r = p.add_run()
-        last_paragraph = self.doc.paragraphs[-1] 
+        last_paragraph = self.doc.paragraphs[-1]
         last_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-        if img2 != None:   
+        if img2 != None:
             r.add_picture(img2)
             r.add_break()
         r.add_picture(img)
