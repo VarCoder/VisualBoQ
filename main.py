@@ -252,7 +252,6 @@ class Agent():
         self.colorsFinal = []
         for sheet in range(len(self.sheets)):
             self.colors = []
-            # if self.sheetObjs[sheet].name == "Designer":  # Only for Designer currently
             start, end = self.sheetObjs[sheet].info["Colors"]
             cell_range = f"{start}{self.startInd}:{end}{self.maxRows[sheet]}"
 
@@ -262,11 +261,13 @@ class Agent():
                 for cell in column:
                     if cnt % colorArr == 0:
                         self.colors.append(
-                            [[self.sheetObjs[sheet], cell.row]])
+                            [[self.sheetObjs[sheet], cell.row]]
+                        )
                     if cell.value != None:
                         self.colors[cnt//colorArr].append(cell.value)
                     cnt += 1
             self.colorsFinal += self.colors
+        self.colors = self.colorsFinal
             # else:
             #     start, end = self.sheetObjs[sheet].info 
         # print(self.colors)
@@ -373,7 +374,7 @@ class Agent():
                 )
             self.driver.execute_script("arguments[0].click();", self.colorPanel)
             colorProfile = find(
-                self.colors, lambda x: x[0][1] == modules[0][1]
+                self.colors, lambda x: x[0] == modules[0]
             )
             # #TODO: Implement Colors
             colorInfo=colorProfile[0]
@@ -459,7 +460,7 @@ infinity = Sheet("Infinity", 0)
 infinity.addColInfo(info="Modules", colStart="K", colEnd="M")
 infinity.addColInfo(info="Product", colStart="U")
 infinity.addColInfo(info="Space", colStart="D")
-infinity.addColInfo(info="Colors", colStart="P", colEnd="Q")
+infinity.addColInfo(info="Colors", colStart="O", colEnd="P")
 
 designer = Sheet("Designer", 1)
 designer.addColInfo(info="Modules", colStart="I", colEnd="N")
