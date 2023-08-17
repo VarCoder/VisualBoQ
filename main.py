@@ -119,7 +119,6 @@ class Doc():
         r.add_text(desc2)
         r.add_break()
         r.add_text(desc3)
-        r.add_break()
 
     def save(self):
         self.doc.save(f"{self.fileName}.docx")
