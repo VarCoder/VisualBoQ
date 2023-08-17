@@ -1,0 +1,6 @@
+tmp/
+assets/
+tempCodeRunner.py
+*.xlsm
+*.docx
+tempCodeRunnerFile.py
