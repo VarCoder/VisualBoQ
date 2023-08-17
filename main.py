@@ -106,7 +106,7 @@ class Doc():
         logo_run = paragraph.add_run()
         logo_run.add_picture(self.logo, width=Inches(2.5))
 
-    def addRun(self, img, desc1, desc2, img2=None):
+    def addRun(self, img, desc1, desc2, desc3, img2=None):
         p = self.doc.add_paragraph()
         r = p.add_run()
         if img2 != None:
@@ -117,6 +117,9 @@ class Doc():
         r.add_text(desc1)
         r.add_break()
         r.add_text(desc2)
+        r.add_break()
+        r.add_text(desc3)
+        r.add_break()
 
     def save(self):
         self.doc.save(f"{self.fileName}.docx")
@@ -441,10 +444,12 @@ class Agent():
                     str(sheet[f"{sheetObj.info['Product']}{row}"].value)
                 space = "Space: " + \
                     str(sheet[f"{sheetObj.info['Space']}{row}"].value)
+                prodType = "Product Type : " + \
+                    str(sheetObj.name)
                 path = str(
                     Path(os.path.join(self.dir, f"switch_{switch}.png")).absolute())
                 setImageDpi(path, 96*2)
-                document.addRun(path, space, prodDesc, frameImg)
+                document.addRun(path, space,prodType, prodDesc, frameImg)
             document.save()
 
 
