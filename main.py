@@ -110,8 +110,6 @@ class Doc():
     def addRun(self, img, desc1, desc2, img2=None):
         p = self.doc.add_paragraph()
         r = p.add_run()
-        last_paragraph = self.doc.paragraphs[-1]
-        last_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         if img2 != None:
             r.add_picture(img2)
             r.add_break()
@@ -159,9 +157,8 @@ class Agent():
         self.options.add_argument("--headless")
         self.options.add_argument("--window-size=1920,1080")
         self.options.add_argument('log-level=3')
-        self.driver = webdriver.Chrome(options=self.options)
+        self.driver = webdriver.Chrome("assets/chromedriver.exe",options=self.options)
         self.maxWait = 3
-        # WebDriverWait(self.driver,self.maxWait) = WebDriverWait(self.driver, self.maxWait)
 
         self.wb = wb
         self.dir = dir
@@ -253,25 +250,29 @@ class Agent():
         # print(self.modules)
 
     def getColors(self):  # sheet is the indice of the sheet
-        self.colors = []
+        self.colorsFinal = []
         for sheet in range(len(self.sheets)):
-            if self.sheetObjs[sheet].name == "Designer":  # Only for Designer currently
-                start, end = self.sheetObjs[sheet].info["Colors"]
-                cell_range = f"{start}{self.startInd}:{end}{self.maxRows[sheet]}"
+            self.colors = []
+            # if self.sheetObjs[sheet].name == "Designer":  # Only for Designer currently
+            start, end = self.sheetObjs[sheet].info["Colors"]
+            cell_range = f"{start}{self.startInd}:{end}{self.maxRows[sheet]}"
 
-                colorArr = ord(end) - ord(start) + 1
-                cnt = 0
-                for column in self.sheets[sheet][cell_range]:
-                    for cell in column:
-                        if cnt % colorArr == 0:
-                            self.colors.append(
-                                [[self.sheetObjs[sheet], cell.row]])
-                        if cell.value != None:
-                            self.colors[cnt//colorArr].append(cell.value)
-                        cnt += 1
+            colorArr = ord(end) - ord(start) + 1
+            cnt = 0
+            for column in self.sheets[sheet][cell_range]:
+                for cell in column:
+                    if cnt % colorArr == 0:
+                        self.colors.append(
+                            [[self.sheetObjs[sheet], cell.row]])
+                    if cell.value != None:
+                        self.colors[cnt//colorArr].append(cell.value)
+                    cnt += 1
+            self.colorsFinal += self.colors
+            # else:
+            #     start, end = self.sheetObjs[sheet].info 
         # print(self.colors)
 
-    def clickColor(self, level: str, colorProfile: str):
+    def clickColor(self, level: str, colorProfile: str, colorInfo : List):
         try:
             WebDriverWait(self.driver, self.maxWait).until(
                 EC.visibility_of_any_elements_located(
@@ -366,30 +367,34 @@ class Agent():
             #         (By.CLASS_NAME, "module-type-label"))
             # )
             # WebDriverWait(self.driver,self.maxWait) = WebDriverWait(self.driver,30)
-            # #TODO: Implement Colors
-            if modules[0][0].name == "Designer":
-                self.colorPanel = WebDriverWait(self.driver, self.maxWait).until(
+            self.colorPanel = WebDriverWait(self.driver, self.maxWait).until(
                     lambda driver: driver.find_element(
                         By.CSS_SELECTOR, 'div[data-panelid=".colorPanel"]'
                     )
                 )
-                self.driver.execute_script(
-                    "arguments[0].click();", self.colorPanel)
-                colorProfile = find(
-                    self.colors, lambda x: x[0][1] == modules[0][1]
-                )[1:]
-                self.clickColor("Outer Surface", colorProfile=colorProfile[0])
-                self.clickColor("Outer Frame", colorProfile=colorProfile[1])
-                self.clickColor("Inner Surface", colorProfile=colorProfile[2])
-                self.clickColor("Inner Frame", colorProfile=colorProfile[3])
-                response = requests.get(
-                    f"https://app.smarttouchswitch.com/modules/components/images/frames/{colorProfile[0]}{colorProfile[1]}-Frame.png")
-                frame = PILimage.open(BytesIO(response.content))
-                framePath = f"frame_{moduleInd}.png"
-                frame.save(framePath)
-                modules[0].append(framePath)
-                self.colorPanel.click()
-
+            self.driver.execute_script("arguments[0].click();", self.colorPanel)
+            colorProfile = find(
+                self.colors, lambda x: x[0][1] == modules[0][1]
+            )
+            # #TODO: Implement Colors
+            colorInfo=colorProfile[0]
+            colorProfile = colorProfile[1:]
+            response = requests.get(
+                f"https://app.smarttouchswitch.com/modules/components/images/frames/{colorProfile[0]}{colorProfile[1]}-Frame.png"
+            )
+            frame = PILimage.open(BytesIO(response.content))
+            framePath = f"frame_{moduleInd}.png"
+            frame.save(framePath)
+            modules[0].append(framePath)
+            if modules[0][0].name == "Designer":
+                self.clickColor("Outer Surface", colorProfile=colorProfile[0], colorInfo=colorInfo)
+                self.clickColor("Outer Frame", colorProfile=colorProfile[1], colorInfo=colorInfo)
+                self.clickColor("Inner Surface", colorProfile=colorProfile[2], colorInfo=colorInfo)
+                self.clickColor("Inner Frame", colorProfile=colorProfile[3], colorInfo=colorInfo)
+            else:
+                self.clickColor("Outer Surface", colorProfile=colorProfile[0], colorInfo=colorInfo)
+                self.clickColor("Outer Frame", colorProfile=colorProfile[1], colorInfo=colorInfo)
+            self.colorPanel.click()                
             self.screenshot(index=moduleInd)
 
     def screenshot(self, index):
@@ -455,6 +460,7 @@ infinity = Sheet("Infinity", 0)
 infinity.addColInfo(info="Modules", colStart="K", colEnd="M")
 infinity.addColInfo(info="Product", colStart="U")
 infinity.addColInfo(info="Space", colStart="D")
+infinity.addColInfo(info="Colors", colStart="P", colEnd="Q")
 
 designer = Sheet("Designer", 1)
 designer.addColInfo(info="Modules", colStart="I", colEnd="N")
