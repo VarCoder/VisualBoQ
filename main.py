@@ -7,7 +7,6 @@ from typing import List
 
 import requests
 from docx import Document as WordDocument
-from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.shared import Inches
 from openpyxl import load_workbook
 from openpyxl.utils.exceptions import InvalidFileException
@@ -157,7 +156,7 @@ class Agent():
         self.options.add_argument("--headless")
         self.options.add_argument("--window-size=1920,1080")
         self.options.add_argument('log-level=3')
-        self.driver = webdriver.Chrome("assets/chromedriver.exe",options=self.options)
+        self.driver = webdriver.Chrome(options=self.options)
         self.maxWait = 3
 
         self.wb = wb
