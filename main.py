@@ -9,6 +9,7 @@ from typing import List
 import requests
 from docx import Document as WordDocument
 from docx.shared import Inches
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from openpyxl import load_workbook
 from openpyxl.utils.exceptions import InvalidFileException
 from PIL import Image as PILimage
@@ -111,7 +112,9 @@ class Doc():
     def addRun(self, img, desc1, desc2, img2=None):
         p = self.doc.add_paragraph()
         r = p.add_run()
-        if img2 != None:
+        last_paragraph = self.doc.paragraphs[-1] 
+        last_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        if img2 != None:   
             r.add_picture(img2)
             r.add_break()
         r.add_picture(img)
@@ -155,7 +158,7 @@ class Agent():
     def __init__(self, wb, dir="tmp", sheets: List[Sheet] = []):
         self.options = webdriver.ChromeOptions()
         # self.options.add_argument("--disable-gpu")
-        # self.options.add_argument("--headless")
+        self.options.add_argument("--headless")
         self.options.add_argument("--window-size=1920,1080")
         self.options.add_argument('log-level=3')
         self.driver = webdriver.Chrome(options=self.options)
@@ -322,7 +325,6 @@ class Agent():
                 # TODO: Implement vertical switches (when excel is updated)
                 modType = self.driver.find_elements(
                     By.CLASS_NAME, "mod-label")[len(modules)-2]
-                print(modType.text)
                 modType.click()
 
             # WebDriverWait(self.driver,self.maxWait).until(
@@ -430,7 +432,6 @@ class Agent():
                     frameImg = str(
                         Path(os.path.join(self.dir, self.modules[switch][0][-1])).absolute())
                     setImageDpi(frameImg, 96*2)
-                    print(frameImg)
                 sheet = self.wb[sheetObj.name]
 
                 prodDesc = "Product Description: " + \
