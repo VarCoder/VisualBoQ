@@ -1,6 +1,7 @@
 import os
 import shutil
 import warnings
+import time
 from io import BytesIO
 from pathlib import Path
 from typing import List
@@ -12,6 +13,7 @@ from openpyxl import load_workbook
 from openpyxl.utils.exceptions import InvalidFileException
 from PIL import Image as PILimage
 from selenium import webdriver
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -39,31 +41,48 @@ def xlToWebDict(sheet):
         switch_types = ['1 Gang', '2 Gang', '3 Gang', '4 Gang', '1 Gang Profile Keypad', '2 Gang Profile Keypad', '3 Gang Profile Keypad', '4 Gang Profile Keypad', '6 Gang Profile Keypad', 'Blinds', '2 Blinds', 'Curtain',
                         '2 Curtain', 'Door Bell', 'Fan Dimmer', 'Light Dimmer', '2 Light Dimmer', '3 Light Dimmer', 'Tunable', 'Socket (5-15 Amps)', 'Socket (2 USB+Switch)', 'C Type', 'Socket with C Type', 'HDMI USB', 'Cable', 'Data', 'Telephone']
         XL_TO_WEB = {item: item for item in switch_types}
+        XL_TO_WEB["1 Gang - WR(S)"] = '1 Gang'
         XL_TO_WEB["2 Gang - WR(S)"] = '2 Gang'
-        XL_TO_WEB["2 Gang (M)"] = '2 Gang'
+        XL_TO_WEB["3 Gang - WR(S)"] = '3 Gang'
+        XL_TO_WEB["4 Gang - WR(S)"] = '4 Gang'
+        XL_TO_WEB["Light Dimmer (M)"] = 'Light Dimmer'
+        XL_TO_WEB["Light Dimmer (S)"] = 'Light Dimmer'
+        XL_TO_WEB["T Light Dimmer"] = 'Light Dimmer'
+        XL_TO_WEB["T Light Dimmer (M)"] = 'Light Dimmer'
+        XL_TO_WEB["T Light Dimmer (S)"] = 'Light Dimmer'
         XL_TO_WEB["1 Gang (M)"] = '1 Gang'
+        XL_TO_WEB["2 Gang (M)"] = '2 Gang'
+        XL_TO_WEB["3 Gang (M)"] = '3 Gang'
+        XL_TO_WEB["4 Gang (M)"] = '4 Gang'
         XL_TO_WEB["Socket (USB+C-type(2A)+Switch)"] = "Socket (2 USB+Switch)"
         XL_TO_WEB["Telephone Socket"] = "Telephone"
+        XL_TO_WEB["Cable Socket"] = "Cable"
+        XL_TO_WEB["Data Socket"] = "Data"
+        
 
     else:
-        switch_types = ['1 Gang', '2 Gang', '3 Gang', '4 Gang', 'Blinds', '2 Blinds', 'Curtain',
-                        '2 Curtain', 'Door Bell', 'Fan Dimmer', 'Light Dimmer', '2 Light Dimmer', '3 Light Dimmer', 'Tunable', 'Socket (5-15 Amps)', 'Socket (2 USB+Switch)', 'C Type', 'Socket with C Type', 'HDMI USB', 'Cable', 'Data', 'Telephone']
+        switch_types = ['1 Gang', '2 Gang', '3 Gang', '4 Gang', '1 Gang Profile Keypad', '2 Gang Profile Keypad', '3 Gang Profile Keypad', '4 Gang Profile Keypad', '6 Gang Profile Keypad', 'Blinds', '2 Blinds', 'Curtain',
+                '2 Curtain', 'Door Bell', 'Fan Dimmer', 'Light Dimmer', '2 Light Dimmer', '3 Light Dimmer', 'Tunable', 'Socket (5-15 Amps)', 'Socket (2 USB+Switch)', 'C Type', 'Socket with C Type', 'HDMI USB', 'Cable', 'Data', 'Telephone']
+
+        # switch_types = ['1 Gang', '2 Gang', '3 Gang', '4 Gang', 'Blinds', '2 Blinds', 'Curtain',
+        #                 '2 Curtain', 'Door Bell', 'Fan Dimmer', 'Light Dimmer', '2 Light Dimmer', '3 Light Dimmer', 'Tunable', 'Socket (5-15 Amps)', 'Socket (2 USB+Switch)', 'C Type', 'Socket with C Type', 'HDMI USB', 'Cable', 'Data', 'Telephone']
         XL_TO_WEB = {item: item for item in switch_types}
         XL_TO_WEB["2 Gang - WR(S)"] = '2 Gang'
         XL_TO_WEB["1 Gang - WR(S)"] = "1 Gang"
         XL_TO_WEB["2 Gang (M)"] = '2 Gang'
         XL_TO_WEB["1 Gang (M)"] = '1 Gang'
-        XL_TO_WEB["Socket (USB+C-type(2A)+Switch)"] = "Socket (2 USB+Switch)"
-        # XL_TO_WEB["Telephone Socket"] = "Telephone"
+        XL_TO_WEB["Socket (USB+C-type(2A)+Switch)"] = "Socket with C Type"
+        # XL_TO_WEB["Socket (USB+C-type(2A)+Switch)"] = "Socket (2 USB+Switch)"
+        XL_TO_WEB["HDMI Socket"] = "HDMI"
 
-        XL_TO_WEB["1 Gang Profile Keypad"] = "1 Gang"
-        XL_TO_WEB["2 Gang Profile Keypad"] = "2 Gang"
-        XL_TO_WEB["3 Gang Profile Keypad"] = "3 Gang"
-        XL_TO_WEB["4 Gang Profile Keypad"] = "4 Gang"
-        XL_TO_WEB["6 Gang Profile Keypad"] = "4 Gang"
-        XL_TO_WEB["Dummy + Backbox"] = "1 Gang"
-        XL_TO_WEB["Telephone Socket"] = "1 Gang"
-        XL_TO_WEB["Foot Lamp"] = "1 Gang"
+        XL_TO_WEB["DND Call switch"] = "DND Call switch"
+        XL_TO_WEB["Thermostat"] = "Thermostat"
+        XL_TO_WEB["Panic Button"] = "Panic Button"
+        XL_TO_WEB["Motion Sensor"] = "Motion Sensor"
+        XL_TO_WEB["Card Key"] = "Card Key"
+        XL_TO_WEB["Dummy + Backbox"] = "Dummy + Backbox"
+        XL_TO_WEB["Telephone Socket"] = "Telephone"
+        XL_TO_WEB["Foot Lamp"] = "Foot Lamp"
 
     return XL_TO_WEB
 
@@ -162,12 +181,13 @@ class Sheet():
 
 class Agent():
 
-    def __init__(self, wb, dir="tmp", sheets: List[Sheet] = []):
+    def __init__(self, wb, dir="tmp", sheets: List[Sheet] = [],url = "https://app.smarttouchswitch.com/"):
         self.options = webdriver.ChromeOptions()
         # self.options.add_argument("--disable-gpu")
         self.options.add_argument("--headless")
         self.options.add_argument("--window-size=1920,1080")
         self.options.add_argument('log-level=3')
+        self.url = url
         self.driver = webdriver.Chrome(options=self.options)
         self.maxWait = 3
 
@@ -200,7 +220,7 @@ class Agent():
     def openToIndia(self):
         # Waits until page is fully loaded
         self.driver.implicitly_wait(self.maxWait)
-        self.driver.get("https://app.smarttouchswitch.com/")
+        self.driver.get(self.url)
 
         try:
             button = self.driver.find_element(
@@ -225,7 +245,11 @@ class Agent():
         col2 = [str(cell[0].value).replace('\n','') for cell in sheet["C7:C13"]]
         self.clientDetails = list(zip(col,col2))
 
+    def click(self, element : WebElement):
+        self.driver.execute_script("arguments[0].click();", element)
+
     def getModules(self):
+
         self.modulesFinal = []
         for sheet in range(len(self.sheets)):
             self.modules = []
@@ -263,7 +287,6 @@ class Agent():
         module = [[Sheet(Infinity or Designer),rowOfInformation], Module 1, Module 2, Module 3]
         """
         self.modules = tmpModules
-        # print(self.modules)
 
     def getColors(self):  # sheet is the indice of the sheet
         self.colorsFinal = []
@@ -296,8 +319,9 @@ class Agent():
                     (By.CLASS_NAME, "mod-label"))
             )
         except:
-            self.driver.execute_script(
-                "arguments[0].click();", self.colorPanel)
+            self.click(self.colorPanel)
+            # self.driver.execute_script(
+            #     "arguments[0].click();", self.colorPanel)
             WebDriverWait(self.driver, self.maxWait).until(
                 EC.visibility_of_any_elements_located(
                     (By.CLASS_NAME, "mod-label"))
@@ -307,7 +331,8 @@ class Agent():
         colorType = self.driver.find_element(
             By.XPATH, f"//span[text()=\'{level}\']"
         )
-        colorType.click()
+        # colorType.click()
+        self.click(colorType)
         if level == "Outer Surface":
             WebDriverWait(self.driver, self.maxWait).until(
                 EC.visibility_of_any_elements_located(
@@ -316,13 +341,15 @@ class Agent():
             glass = self.driver.find_element(
                 By.CLASS_NAME, "fab-label-inner"
             )
-            glass.click()
+            self.click(glass)
         color = self.driver.find_element(
             By.XPATH, f"//a[@glass-color=\'{colorProfile.lower()}\'][@data-colortype='glass']"
-        ).click()
+        )
+        self.click(color)
 
     def clickModules(self):
         for moduleInd in range(len(self.modules)):
+            start = time.perf_counter()
             modules = self.modules[moduleInd]
             self.openToIndia()
 
@@ -336,60 +363,67 @@ class Agent():
                 switchPlate = designerToWeb[ws[f"{modules[0][0].info['Switch']}{modules[0][1]}"].value]
                 modType = self.driver.find_element(
                     By.XPATH, f"//span[text()=\'{switchPlate}\']")
-                modType.click()
+                self.click(modType)
             else:
                 # TODO: Implement vertical switches (when excel is updated)
                 modType = self.driver.find_elements(
                     By.CLASS_NAME, "mod-label")[len(modules)-2]
-                modType.click()
+                self.click(modType)
 
-            # WebDriverWait(self.driver,self.maxWait).until(
-            #     EC.visibility_of_element_located(
-            #         (By.CSS_SELECTOR, 'div[data-panelid=".modulePanel"]')
-            #     )
-            # )
+            sizePanel = self.driver.find_element(
+                By.CSS_SELECTOR, 'div[data-panelid=".sizePanel"]'
+            )
+            self.click(sizePanel)
+            self.driver.implicitly_wait(1)
+            WebDriverWait(self.driver,5).until(
+                EC.invisibility_of_element(
+                    (By.CLASS_NAME, "mod-label")
+                )
+            )
             modPanel = self.driver.find_element(
                 By.CSS_SELECTOR, 'div[data-panelid=".modulePanel"]'
             )
-            modPanel.click()
+            self.click(modPanel)
+            # self.click(modPanel)
             try:
-                WebDriverWait(self.driver, self.maxWait).until(
+                WebDriverWait(self.driver, 5).until(
                     EC.visibility_of_any_elements_located(
                         (By.CLASS_NAME, "module-type-label"))
                 )
             except:
-                modPanel.click()
-                WebDriverWait(self.driver, self.maxWait).until(
+                self.click(modPanel)
+                
+                WebDriverWait(self.driver, 5).until(
                     EC.visibility_of_any_elements_located(
                         (By.CLASS_NAME, "module-type-label"))
                 )
+                modPanel.click()
+
+                WebDriverWait(self.driver, 5).until(
+                    EC.visibility_of_any_elements_located(
+                        (By.CLASS_NAME, "module-type-label"))
+                )
+
             # Skip the module info and get the modules themselves
             for module in modules[1:]:
-                WebDriverWait(self.driver, self.maxWait).until(
-                    EC.element_to_be_clickable(
-                        (By.XPATH, f"//div[text()=\'{module}\']"))
-                )
-                self.driver.find_element(
+                print(module)
+                self.driver.implicitly_wait(20)
+                modToClick = self.driver.find_element(
                     By.XPATH, f"//div[text()=\'{module}\']"
-                ).click()
+                )
+                self.click(modToClick)
+            self.driver.implicitly_wait(1)    
             WebDriverWait(self.driver, self.maxWait).until(
                 EC.invisibility_of_element(
                     (By.CLASS_NAME, "module-type-label")
                 )
             )
-            modPanel.click()
-            modPanel.click()
-            # WebDriverWait(self.driver,self.maxWait).until(
-            #     EC.invisibility_of_element(
-            #         (By.CLASS_NAME, "module-type-label"))
-            # )
-            # WebDriverWait(self.driver,self.maxWait) = WebDriverWait(self.driver,30)
             self.colorPanel = WebDriverWait(self.driver, self.maxWait).until(
                     lambda driver: driver.find_element(
                         By.CSS_SELECTOR, 'div[data-panelid=".colorPanel"]'
                     )
                 )
-            self.driver.execute_script("arguments[0].click();", self.colorPanel)
+            self.click(self.colorPanel)
             colorProfile = find(
                 self.colors, lambda x: x[0] == modules[0]
             )
@@ -411,12 +445,14 @@ class Agent():
             else:
                 self.clickColor("Outer Surface", colorProfile=colorProfile[0], colorInfo=colorInfo)
                 self.clickColor("Outer Frame", colorProfile=colorProfile[1], colorInfo=colorInfo)
-            self.colorPanel.click()                
+            self.click(self.colorPanel)                
             self.screenshot(index=moduleInd)
+            end = time.perf_counter()
+            print(f"{end-start} Seconds taken for the switch")
 
     def screenshot(self, index):
         final_switch = self.driver.find_element(
-            By.CLASS_NAME, "content-center")
+            By.CLASS_NAME, "switch-panel")
         final_switch.screenshot(f'switch_{index}.png')
         print(f"Switch {index} Completed")
 
@@ -494,7 +530,7 @@ designer.addColInfo(info="Colors", colStart="Q", colEnd="T")
 agent = Agent(wb, dir=dir, sheets=[
     infinity,
     designer
-])
+],url="https://test.buildtrack.in/buildtrack/buildtrack-smart-switch/branches/buildtrack-smart-switch/app-src/")
 
 agent.getModules()
 agent.getColors()
