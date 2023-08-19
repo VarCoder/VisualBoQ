@@ -410,7 +410,6 @@ class Agent():
 
             # Skip the module info and get the modules themselves
             for module in modules[1:]:
-                print(module)
                 self.driver.implicitly_wait(20)
                 modToClick = self.driver.find_element(
                     By.XPATH, f"//div[text()=\'{module}\']"
