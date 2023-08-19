@@ -98,7 +98,17 @@ class Doc():
         self.doc = WordDocument(template)
         self.fileName = fileName
         self.logo = logo
+    def addCoverPage(self,clientDetails):
+    
+        self.clientTable = self.doc.add_table(rows=1,cols=2,style="NewStyle")        
+        self.clientTable.rows[0].cells[0].text = "Client Details: "
+        
+        for heading, info in clientDetails:
+            row = self.clientTable.add_row().cells
+            row[0].text = heading
+            row[1].text = info
 
+        self.doc.add_page_break()
     def addHeader(self):
         header = self.doc.sections[0].header
         paragraph = header.paragraphs[0]
@@ -209,6 +219,11 @@ class Agent():
         for i in range(self.startInd, sheet.max_row):
             if sheet[f"B{i}"].value == None and sheet[f"O{i}"].value == None:
                 return i-1
+    def getClientDetails(self):
+        sheet = self.wb["Space"]
+        col = [str(cell[0].value).replace('\n','') for cell in sheet["A7:A13"]]
+        col2 = [str(cell[0].value).replace('\n','') for cell in sheet["C7:C13"]]
+        self.clientDetails = list(zip(col,col2))
 
     def getModules(self):
         self.modulesFinal = []
@@ -417,7 +432,10 @@ class Agent():
         return colVals
 
     def publish(self, fileName="Proposal", debug=False):
+        self.getClientDetails()
         document = Doc(fileName=fileName)
+        
+        document.addCoverPage(self.clientDetails)
         document.addHeader()
         if debug:
             for img_path in os.listdir(self.dir):
