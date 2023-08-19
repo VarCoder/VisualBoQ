@@ -1,7 +1,7 @@
 import os
 import shutil
-import warnings
 import time
+import warnings
 from io import BytesIO
 from pathlib import Path
 from typing import List
@@ -13,9 +13,9 @@ from openpyxl import load_workbook
 from openpyxl.utils.exceptions import InvalidFileException
 from PIL import Image as PILimage
 from selenium import webdriver
-from selenium.webdriver.remote.webelement import WebElement
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
@@ -58,11 +58,10 @@ def xlToWebDict(sheet):
         XL_TO_WEB["Telephone Socket"] = "Telephone"
         XL_TO_WEB["Cable Socket"] = "Cable"
         XL_TO_WEB["Data Socket"] = "Data"
-        
 
     else:
         switch_types = ['1 Gang', '2 Gang', '3 Gang', '4 Gang', '1 Gang Profile Keypad', '2 Gang Profile Keypad', '3 Gang Profile Keypad', '4 Gang Profile Keypad', '6 Gang Profile Keypad', 'Blinds', '2 Blinds', 'Curtain',
-                '2 Curtain', 'Door Bell', 'Fan Dimmer', 'Light Dimmer', '2 Light Dimmer', '3 Light Dimmer', 'Tunable', 'Socket (5-15 Amps)', 'Socket (2 USB+Switch)', 'C Type', 'Socket with C Type', 'HDMI USB', 'Cable', 'Data', 'Telephone']
+                        '2 Curtain', 'Door Bell', 'Fan Dimmer', 'Light Dimmer', '2 Light Dimmer', '3 Light Dimmer', 'Tunable', 'Socket (5-15 Amps)', 'Socket (2 USB+Switch)', 'C Type', 'Socket with C Type', 'HDMI USB', 'Cable', 'Data', 'Telephone']
 
         # switch_types = ['1 Gang', '2 Gang', '3 Gang', '4 Gang', 'Blinds', '2 Blinds', 'Curtain',
         #                 '2 Curtain', 'Door Bell', 'Fan Dimmer', 'Light Dimmer', '2 Light Dimmer', '3 Light Dimmer', 'Tunable', 'Socket (5-15 Amps)', 'Socket (2 USB+Switch)', 'C Type', 'Socket with C Type', 'HDMI USB', 'Cable', 'Data', 'Telephone']
@@ -117,17 +116,19 @@ class Doc():
         self.doc = WordDocument(template)
         self.fileName = fileName
         self.logo = logo
-    def addCoverPage(self,clientDetails):
-    
-        self.clientTable = self.doc.add_table(rows=1,cols=2,style="NewStyle")        
+
+    def addCoverPage(self, clientDetails):
+
+        self.clientTable = self.doc.add_table(rows=1, cols=2, style="NewStyle")
         self.clientTable.rows[0].cells[0].text = "Client Details: "
-        
+
         for heading, info in clientDetails:
             row = self.clientTable.add_row().cells
             row[0].text = heading
             row[1].text = info
 
         self.doc.add_page_break()
+
     def addHeader(self):
         header = self.doc.sections[0].header
         paragraph = header.paragraphs[0]
@@ -181,7 +182,7 @@ class Sheet():
 
 class Agent():
 
-    def __init__(self, wb, dir="tmp", sheets: List[Sheet] = [],url = "https://app.smarttouchswitch.com/"):
+    def __init__(self, wb, dir="tmp", sheets: List[Sheet] = [], url="https://app.smarttouchswitch.com/"):
         self.options = webdriver.ChromeOptions()
         # self.options.add_argument("--disable-gpu")
         self.options.add_argument("--headless")
@@ -239,13 +240,16 @@ class Agent():
         for i in range(self.startInd, sheet.max_row):
             if sheet[f"B{i}"].value == None and sheet[f"O{i}"].value == None:
                 return i-1
+
     def getClientDetails(self):
         sheet = self.wb["Space"]
-        col = [str(cell[0].value).replace('\n','') for cell in sheet["A7:A13"]]
-        col2 = [str(cell[0].value).replace('\n','') for cell in sheet["C7:C13"]]
-        self.clientDetails = list(zip(col,col2))
+        col = [str(cell[0].value).replace('\n', '')
+               for cell in sheet["A7:A13"]]
+        col2 = [str(cell[0].value).replace('\n', '')
+                for cell in sheet["C7:C13"]]
+        self.clientDetails = list(zip(col, col2))
 
-    def click(self, element : WebElement):
+    def click(self, element: WebElement):
         self.driver.execute_script("arguments[0].click();", element)
 
     def getModules(self):
@@ -308,11 +312,11 @@ class Agent():
                     cnt += 1
             self.colorsFinal += self.colors
         self.colors = self.colorsFinal
-            # else:
-            #     start, end = self.sheetObjs[sheet].info 
+        # else:
+        #     start, end = self.sheetObjs[sheet].info
         # print(self.colors)
 
-    def clickColor(self, level: str, colorProfile: str, colorInfo : List):
+    def clickColor(self, level: str, colorProfile: str, colorInfo: List):
         try:
             WebDriverWait(self.driver, self.maxWait).until(
                 EC.visibility_of_any_elements_located(
@@ -375,7 +379,7 @@ class Agent():
             )
             self.click(sizePanel)
             self.driver.implicitly_wait(1)
-            WebDriverWait(self.driver,5).until(
+            WebDriverWait(self.driver, 5).until(
                 EC.invisibility_of_element(
                     (By.CLASS_NAME, "mod-label")
                 )
@@ -392,7 +396,7 @@ class Agent():
                 )
             except:
                 self.click(modPanel)
-                
+
                 WebDriverWait(self.driver, 5).until(
                     EC.visibility_of_any_elements_located(
                         (By.CLASS_NAME, "module-type-label"))
@@ -412,23 +416,23 @@ class Agent():
                     By.XPATH, f"//div[text()=\'{module}\']"
                 )
                 self.click(modToClick)
-            self.driver.implicitly_wait(1)    
+            self.driver.implicitly_wait(1)
             WebDriverWait(self.driver, self.maxWait).until(
                 EC.invisibility_of_element(
                     (By.CLASS_NAME, "module-type-label")
                 )
             )
             self.colorPanel = WebDriverWait(self.driver, self.maxWait).until(
-                    lambda driver: driver.find_element(
-                        By.CSS_SELECTOR, 'div[data-panelid=".colorPanel"]'
-                    )
+                lambda driver: driver.find_element(
+                    By.CSS_SELECTOR, 'div[data-panelid=".colorPanel"]'
                 )
+            )
             self.click(self.colorPanel)
             colorProfile = find(
                 self.colors, lambda x: x[0] == modules[0]
             )
             # #TODO: Implement Colors
-            colorInfo=colorProfile[0]
+            colorInfo = colorProfile[0]
             colorProfile = colorProfile[1:]
             response = requests.get(
                 f"https://app.smarttouchswitch.com/modules/components/images/frames/{colorProfile[0]}{colorProfile[1]}-Frame.png"
@@ -438,14 +442,20 @@ class Agent():
             frame.save(framePath)
             modules[0].append(framePath)
             if modules[0][0].name == "Designer":
-                self.clickColor("Outer Surface", colorProfile=colorProfile[0], colorInfo=colorInfo)
-                self.clickColor("Outer Frame", colorProfile=colorProfile[1], colorInfo=colorInfo)
-                self.clickColor("Inner Surface", colorProfile=colorProfile[2], colorInfo=colorInfo)
-                self.clickColor("Inner Frame", colorProfile=colorProfile[3], colorInfo=colorInfo)
+                self.clickColor(
+                    "Outer Surface", colorProfile=colorProfile[0], colorInfo=colorInfo)
+                self.clickColor(
+                    "Outer Frame", colorProfile=colorProfile[1], colorInfo=colorInfo)
+                self.clickColor(
+                    "Inner Surface", colorProfile=colorProfile[2], colorInfo=colorInfo)
+                self.clickColor(
+                    "Inner Frame", colorProfile=colorProfile[3], colorInfo=colorInfo)
             else:
-                self.clickColor("Outer Surface", colorProfile=colorProfile[0], colorInfo=colorInfo)
-                self.clickColor("Outer Frame", colorProfile=colorProfile[1], colorInfo=colorInfo)
-            self.click(self.colorPanel)                
+                self.clickColor(
+                    "Outer Surface", colorProfile=colorProfile[0], colorInfo=colorInfo)
+                self.clickColor(
+                    "Outer Frame", colorProfile=colorProfile[1], colorInfo=colorInfo)
+            self.click(self.colorPanel)
             self.screenshot(index=moduleInd)
             end = time.perf_counter()
             print(f"{end-start} Seconds taken for the switch")
@@ -470,7 +480,7 @@ class Agent():
     def publish(self, fileName="Proposal", debug=False):
         self.getClientDetails()
         document = Doc(fileName=fileName)
-        
+
         document.addCoverPage(self.clientDetails)
         document.addHeader()
         if debug:
@@ -502,7 +512,7 @@ class Agent():
                 path = str(
                     Path(os.path.join(self.dir, f"switch_{switch}.png")).absolute())
                 setImageDpi(path, 96*2)
-                document.addRun(path, space,prodType, prodDesc, frameImg)
+                document.addRun(path, space, prodType, prodDesc, frameImg)
             document.save()
 
 
@@ -530,7 +540,7 @@ designer.addColInfo(info="Colors", colStart="Q", colEnd="T")
 agent = Agent(wb, dir=dir, sheets=[
     infinity,
     designer
-],url="https://test.buildtrack.in/buildtrack/buildtrack-smart-switch/branches/buildtrack-smart-switch/app-src/")
+], url="https://test.buildtrack.in/buildtrack/buildtrack-smart-switch/branches/buildtrack-smart-switch/app-src/")
 
 agent.getModules()
 agent.getColors()
