@@ -226,7 +226,7 @@ class Agent():
         try:
             button = self.driver.find_element(
                 By.CLASS_NAME, "build-action-button")
-            button.click()  # Opens to the Builder Menu
+            self.click(button)  # Opens to the Builder Menu
 
         except TimeoutException:
             print("Loading took too much time!")
@@ -388,25 +388,11 @@ class Agent():
                 By.CSS_SELECTOR, 'div[data-panelid=".modulePanel"]'
             )
             self.click(modPanel)
-            # self.click(modPanel)
-            try:
-                WebDriverWait(self.driver, 5).until(
-                    EC.visibility_of_any_elements_located(
-                        (By.CLASS_NAME, "module-type-label"))
-                )
-            except:
-                self.click(modPanel)
-
-                WebDriverWait(self.driver, 5).until(
-                    EC.visibility_of_any_elements_located(
-                        (By.CLASS_NAME, "module-type-label"))
-                )
-                modPanel.click()
-
-                WebDriverWait(self.driver, 5).until(
-                    EC.visibility_of_any_elements_located(
-                        (By.CLASS_NAME, "module-type-label"))
-                )
+            
+            WebDriverWait(self.driver, 5).until(
+                EC.visibility_of_any_elements_located(
+                    (By.CLASS_NAME, "module-type-label"))
+            )
 
             # Skip the module info and get the modules themselves
             for module in modules[1:]:
