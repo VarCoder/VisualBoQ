@@ -526,7 +526,7 @@ agent = Agent(wb, dir=dir, sheets=[
     infinity,
     designer
 ], url="https://test.buildtrack.in/buildtrack/buildtrack-smart-switch/branches/buildtrack-smart-switch/app-src/")
-
+agent.openToIndia()
 agent.getModules()
 agent.getColors()
 agent.clickModules()
