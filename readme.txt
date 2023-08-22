@@ -9,11 +9,15 @@ CAUTION:
 * Ensure that you have deleted/moved any OUTPUT (.doc) file and TMP folder which are generated after running the program
 * 2 Windows will be open while the program is running - one is a python window, the other is the App for Build-Your-Switch which will be manipulated AUTOMATICALLY BY the python program to create the desired switches to capture their images
 * All images captured from Build-Your-Switch app will be stored in the tmp folder. All the images of switches will be named from Switch01 onwards. This is just mentioned in case you need the images.. but they will all be in the OUTPUT doc also. 
- 
-	
-	
+
+
+
 
 Installing Pre-Requisites
+	* Download Python 3.7 from https://www.python.org/ftp/python/3.7.0/python-3.7.0-amd64.exe
+	* Install and add Python to your PATH (This should be in the Installer)
+		- If this didn't work, you can manually add Python to your PATH via these steps - https://datatofish.com/add-python-to-windows-path/
+	* Open a Command Prompt in the directory with the python file
 	1. Download Python 3.7 from https://www.python.org/ftp/python/3.7.0/python-3.7.0-amd64.exe
 	2. Install and add Python to your PATH (This should be an option that arises at the end of your installation process)
 		- If this did not work, you can manually add Python to your PATH via the steps listed in the URL (https://datatofish.com/add-python-to-windows-path/ )
@@ -23,6 +27,12 @@ Installing Pre-Requisites
 		- Type in cmd into the address bar
 		- In the pop-up window, run this command "pip install -r requirements.txt"
 
+How to Run:
+	* Place the Excel File (Proposal Workbook) into the directory
+	* Run the Python File
+		- Open the command prompt in the same way as earlier and run python main.py
+		- Right Click on the File and Open With Python 3.7
+	* The output will be in a Word Document with the same name as the Proposal File
 How to Run the MAIN.py program
 	1 Place the Excel File (BuildTrack Proposal Workbook) into the directory where the PYTHON program is stored
 	2 Run the Python File using ANY one of the 2 options below
@@ -31,3 +41,6 @@ How to Run the MAIN.py program
 	3. The output will be in a Word Document with the same name as the Proposal File
 
 Notes:
+	* If you want to store the image folder (the tmp folder) rename it and move it outside the VisualBoQ
+	* Ensure only one Excel File is in the directory at all times
+	* Try not to interfere with the opened window while the program is running
