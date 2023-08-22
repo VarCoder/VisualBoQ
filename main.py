@@ -54,7 +54,7 @@ def xlToWebDict(sheet):
         XL_TO_WEB["2 Gang (M)"] = '2 Gang'
         XL_TO_WEB["3 Gang (M)"] = '3 Gang'
         XL_TO_WEB["4 Gang (M)"] = '4 Gang'
-        XL_TO_WEB["Socket (USB+C-type(2A)+Switch)"] = "Socket (2 USB+Switch)"
+        XL_TO_WEB["Socket (USB+C-type(2A)+Switch)"] = "Socket with C Type"
         XL_TO_WEB["Telephone Socket"] = "Telephone"
         XL_TO_WEB["Cable Socket"] = "Cable"
         XL_TO_WEB["Data Socket"] = "Data"
@@ -114,7 +114,7 @@ def setImageDpi(path, dpi):
 class Doc():
     def __init__(self, template="assets/template.docx", fileName="Proposal", logo="assets/logo.png"):
         self.doc = WordDocument(template)
-        self.fileName = fileName
+        self.fileName = fileName+".docx"
         self.logo = logo
 
     def addCoverPage(self, clientDetails):
@@ -151,7 +151,7 @@ class Doc():
         r.add_text(desc3)
 
     def save(self):
-        self.doc.save(f"{self.fileName}.docx")
+        self.doc.save(f"{self.fileName}")
 
 
 def find(it, pred, default=None):
@@ -213,10 +213,10 @@ class Agent():
         self.sheetObjs = reformat(self.sheetObjs)
 
         if self.dir in os.listdir():
-            os.chdir(self.dir)
+            os.chdir(Path(self.dir))
         else:
-            os.mkdir(self.dir)
-            os.chdir(self.dir)
+            os.mkdir(Path(self.dir))
+            os.chdir(Path(self.dir))
 
     def openToIndia(self):
         # Waits until page is fully loaded
@@ -419,6 +419,12 @@ class Agent():
             # #TODO: Implement Colors
             colorInfo = colorProfile[0]
             colorProfile = colorProfile[1:]
+            if "TBD" in colorProfile:
+                self.click(self.colorPanel)
+                self.screenshot(index=moduleInd)
+                end = time.perf_counter()
+                print(f"{end-start} Seconds taken for the switch")
+                continue
             response = requests.get(
                 f"https://app.smarttouchswitch.com/modules/components/images/frames/{colorProfile[0]}{colorProfile[1]}-Frame.png"
             )
@@ -465,17 +471,17 @@ class Agent():
     def publish(self, fileName="Proposal", debug=False):
         self.getClientDetails()
         document = Doc(fileName=fileName)
-
+        self.docx = document.fileName
         document.addCoverPage(self.clientDetails)
         document.addHeader()
         if debug:
             for img_path in os.listdir(self.dir):
-                path = str(Path(os.path.join(self.dir, img_path)).absolute())
+                self.switchPath = str(Path(os.path.join(self.dir, img_path)).absolute())
                 spaceText = "Space: "
                 prodText = "Product Description: "
-                setImageDpi(path, 96*2)
+                setImageDpi(self.switchPath, 96*2)
 
-                document.addRun(path, spaceText, prodText)
+                document.addRun(self.switchPath, spaceText, prodText)
             document.save()
         else:
             for switch in range(len(self.modules)):
@@ -494,12 +500,11 @@ class Agent():
                     str(sheet[f"{sheetObj.info['Space']}{row}"].value)
                 prodType = "Product Type : " + \
                     str(sheetObj.name)
-                path = str(
+                self.switchPath = str(
                     Path(os.path.join(self.dir, f"switch_{switch}.png")).absolute())
-                setImageDpi(path, 96*2)
-                document.addRun(path, space, prodType, prodDesc, frameImg)
+                setImageDpi(self.switchPath, 96*2)
+                document.addRun(self.switchPath, space, prodType, prodDesc, frameImg)
             document.save()
-
 
 dir = "tmp"
 xlPath = findExcelFile()

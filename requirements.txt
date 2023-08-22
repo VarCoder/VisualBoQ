@@ -4,3 +4,4 @@ python_docx==0.8.11
 selenium==4.11.2
 urllib3<2.0
 requests
+flask
