@@ -39,7 +39,7 @@ designerToWeb = {
 def xlToWebDict(sheet):
     if sheet == "Infinity":
         switch_types = ['1 Gang', '2 Gang', '3 Gang', '4 Gang', '1 Gang Profile Keypad', '2 Gang Profile Keypad', '3 Gang Profile Keypad', '4 Gang Profile Keypad', '6 Gang Profile Keypad', 'Blinds', '2 Blinds', 'Curtain',
-                        '2 Curtain', 'Door Bell', 'Fan Dimmer', 'Light Dimmer', '2 Light Dimmer', '3 Light Dimmer', 'Tunable', 'Socket (5-15 Amps)', 'Socket (2 USB+Switch)', 'C Type', 'Socket with C Type', 'HDMI USB', 'Cable', 'Data', 'Telephone']
+                        '2 Curtain', 'Door Bell', 'Fan Dimmer', 'Light Dimmer', '2 Light Dimmer', '3 Light Dimmer', 'Tunable', 'Socket (5-15 Amps)', 'C Type', 'Socket with C Type', 'HDMI USB', 'Cable', 'Data', 'Telephone']
         XL_TO_WEB = {item: item for item in switch_types}
         XL_TO_WEB["1 Gang - WR(S)"] = '1 Gang'
         XL_TO_WEB["2 Gang - WR(S)"] = '2 Gang'
@@ -55,6 +55,8 @@ def xlToWebDict(sheet):
         XL_TO_WEB["3 Gang (M)"] = '3 Gang'
         XL_TO_WEB["4 Gang (M)"] = '4 Gang'
         XL_TO_WEB["Socket (USB+C-type(2A)+Switch)"] = "Socket with C Type"
+        XL_TO_WEB["Socket (2 USB+Switch)"] = "Socket with C Type"
+        XL_TO_WEB["Socket (C-type(3A) + USB)"] = "C Type"
         XL_TO_WEB["Telephone Socket"] = "Telephone"
         XL_TO_WEB["Cable Socket"] = "Cable"
         XL_TO_WEB["Data Socket"] = "Data"
@@ -84,7 +86,6 @@ def xlToWebDict(sheet):
         XL_TO_WEB["Foot Lamp"] = "Foot Lamp"
 
     return XL_TO_WEB
-
 
 def findExcelFile():
     for file in os.listdir():
