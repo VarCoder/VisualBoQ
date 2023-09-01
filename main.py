@@ -437,6 +437,9 @@ class Agent():
                 end = time.perf_counter()
                 print(f"{end-start} Seconds taken for the switch")
                 continue
+            if "NA" in colorProfile:
+                self.colorProfile=["White","White","Silver","Silver"]
+
             response = requests.get(
                 f"https://app.smarttouchswitch.com/modules/components/images/frames/{colorProfile[0]}{colorProfile[1]}-Frame.png"
             )
