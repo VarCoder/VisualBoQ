@@ -35,11 +35,16 @@ designerToWeb = {
     "12 Switch Plate": "12 Switch"
 }
 
+def remove_suffix(input_string, suffix):
+    if suffix and input_string.endswith(suffix):
+        return input_string[:-len(suffix)]
+    return input_string
+
 def cleanTitle(switch_type : str):
-    switch_type.removesuffix(' (M)')
-    switch_type.removesuffix(' (S)')
-    switch_type.removesuffix(' - WR(S)')
-    switch_type.removesuffix(' BLDC')
+    switch_type = remove_suffix(switch_type,' (M)')
+    switch_type = remove_suffix(switch_type, ' (S)')
+    switch_type = remove_suffix(switch_type, ' - WR(S)')
+    switch_type = remove_suffix(switch_type, ' BLDC')
     return switch_type
 def xlToWebDict(sheet):
     if sheet == "Infinity":
