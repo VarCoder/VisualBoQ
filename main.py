@@ -35,7 +35,12 @@ designerToWeb = {
     "12 Switch Plate": "12 Switch"
 }
 
-
+def cleanTitle(switch_type : str):
+    switch_type.removesuffix(' (M)')
+    switch_type.removesuffix(' (S)')
+    switch_type.removesuffix(' - WR(S)')
+    switch_type.removesuffix(' BLDC')
+    return switch_type
 def xlToWebDict(sheet):
     if sheet == "Infinity":
         switch_types = ['1 Gang', '2 Gang', '3 Gang', '4 Gang', '1 Gang Profile Keypad', '2 Gang Profile Keypad', '3 Gang Profile Keypad', '4 Gang Profile Keypad', '6 Gang Profile Keypad', 'Blinds', '2 Blinds', 'Curtain',
@@ -278,8 +283,9 @@ class Agent():
             tmpModules.append([module[:2]])
             for item in module[2:]:
                 XL_WEB = self.XL_WEB_INF if module[0].name == "Infinity" else self.XL_WEB_DES
-                if item in XL_WEB:
-                    tmpModules[cnt].append(XL_WEB[item])
+                cleanedItem = cleanTitle(item)
+                if cleanedItem in XL_WEB:
+                    tmpModules[cnt].append(XL_WEB[cleanedItem])
                 else:
                     continue
             # if a module is empty (has no valid switches or excel row is empty)
