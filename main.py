@@ -273,6 +273,8 @@ class Agent():
             maxModuleSize = ord(end) - ord(start) + 1
             cnt = 0
             for column in self.sheets[sheet][cell_range]:
+                if self.sheets[sheet][f"C{column[0].row}"].value == "Cancel":
+                    continue
                 for cell in column:
                     if cnt % maxModuleSize == 0:
                         self.modules.append([self.sheetObjs[sheet], cell.row])
