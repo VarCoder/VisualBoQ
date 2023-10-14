@@ -196,7 +196,7 @@ class Agent():
     def __init__(self, wb, dir="tmp", sheets: List[Sheet] = [], url="https://app.smarttouchswitch.com/"):
         self.options = webdriver.ChromeOptions()
         # self.options.add_argument("--disable-gpu")
-        self.options.add_argument("--headless")
+        # self.options.add_argument("--headless")
         self.options.add_argument("--window-size=1920,1080")
         self.options.add_argument('log-level=3')
         self.url = url
