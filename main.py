@@ -201,7 +201,7 @@ class Agent():
         self.options.add_argument('log-level=3')
         self.url = url
         self.driver = webdriver.Chrome(options=self.options)
-        self.maxWait = 3
+        self.maxWait = 10
 
         self.wb = wb
         self.dir = dir
@@ -414,8 +414,12 @@ class Agent():
                 modToClick = self.driver.find_element(
                     By.XPATH, f"//div[text()=\'{module}\']"
                 )
+                if moduleInd==0:
+                    time.sleep(2)
                 self.click(modToClick)
-            self.driver.implicitly_wait(1)
+                
+            
+            self.driver.implicitly_wait(self.maxWait)
             WebDriverWait(self.driver, self.maxWait).until(
                 EC.invisibility_of_element(
                     (By.CLASS_NAME, "module-type-label")
